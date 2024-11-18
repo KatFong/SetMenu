@@ -21,6 +21,11 @@ tick checkbox 按鈕保留喜歡的菜品
 使用模態框來編輯客人資料
 客人資料資訊框
 
+點擊生成餐單按鈕
+立即顯示模態框和煮菜動畫
+API 請求完成後，動畫淡出
+結果內容淡入顯示
+
 # API key
 AIzaSyCl78ysJGjkonNy8Ly-rpZJuB5bA2DYeJs
 

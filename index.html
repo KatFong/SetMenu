@@ -81,6 +81,9 @@
 
     <script>
         let currentCustomerId = null;
+        let keepItems = [];
+        let menuData = null;
+        let currentMenuItems = [];
 
         function loadCustomerSelect() {
             const customers = JSON.parse(localStorage.getItem('customers') || '[]');
@@ -97,8 +100,22 @@
             const editBtn = document.getElementById('editBtn');
             
             if (!customerId) {
+                // 新增客人模式
                 currentCustomerId = null;
-                customerInfo.style.display = 'none';
+                customerInfo.style.display = 'block'; // 顯示客人資料框
+                customerInfo.innerHTML = `
+                    <h3>新增客人資料</h3>
+                    <div class="input-group">
+                        <label for="newCustomerName">客人姓名</label>
+                        <input type="text" id="newCustomerName" placeholder="請輸入客人姓名">
+                    </div>
+                    <div class="input-group">
+                        <label for="newCustomerNotes">備注</label>
+                        <textarea id="newCustomerNotes" 
+                            placeholder="客人喜好及其他重要備注，例如：不吃辣、喜歡海鮮、避免花生、VIP客人等"></textarea>
+                    </div>
+                    <button onclick="quickSaveCustomer()" class="save-btn">儲存客人資料</button>
+                `;
                 editBtn.style.display = 'none';
                 return;
             }
@@ -108,10 +125,40 @@
             
             if (customer) {
                 currentCustomerId = customer.id;
-                document.getElementById('customerNotes').textContent = customer.notes || '無備注';
+                customerInfo.innerHTML = `
+                    <h3>客人資料</h3>
+                    <p class="customer-notes">${customer.notes || '無備注'}</p>
+                `;
                 customerInfo.style.display = 'block';
                 editBtn.style.display = 'inline-block';
             }
+        }
+
+        // 添加快速儲存客人資料的函數
+        function quickSaveCustomer() {
+            const customerName = document.getElementById('newCustomerName').value;
+            const notes = document.getElementById('newCustomerNotes').value;
+
+            if (!customerName) {
+                alert('請輸入客人姓名');
+                return;
+            }
+
+            const customerData = {
+                id: Date.now().toString(),
+                customerName,
+                notes,
+                lastUpdated: new Date().toISOString()
+            };
+
+            const customers = JSON.parse(localStorage.getItem('customers') || '[]');
+            customers.push(customerData);
+            localStorage.setItem('customers', JSON.stringify(customers));
+
+            // 更新選單並選中新客人
+            loadCustomerSelect();
+            document.getElementById('customerSelect').value = customerData.id;
+            loadCustomerData();
         }
 
         function showEditModal() {
@@ -207,10 +254,12 @@
                     預算：${budget} HKD
                     預計人數：${people}人
                     要求：
-                    1. ${ingredients ? '盡量使用現有食材' : '符合香港人口味'}
-                    2. 適合宴會使用
-                    3. 每道菜都需要包含價格和建議份量
-                    4. ${ingredients ? '如果現有食材不足，建議需要添購的食材' : '建議合適的菜品搭配'}
+                    1. ${ingredients ? '優先使用現有食材' : '建議多元化的菜品組合'}
+                    2. 適合宴會/到會場合使用
+                    3. 考慮成本效益和食材新鮮度
+                    4. 每道菜需包含價格和建議份量
+                    5. ${ingredients ? '建議需要添購的食材' : '建議合適的菜品搭配'}
+                    6. ${notes ? '特別考慮客人的飲食喜好和限制' : '提供均衡的菜品搭配'}
                     
                     請只回應以下格式的JSON，不要加入其他文字：
                     {
@@ -225,7 +274,7 @@
                         "totalPrice": 數字,
                         "recommendedPeople": ${people},
                         ${ingredients ? '"additionalIngredients": ["需要添購的食材"],' : ''}
-                        "notes": "建議說明"
+                        "notes": "建議說明（包含菜品搭配建議和特別注意事項）"
                     }`;
 
                 const response = await fetch(
@@ -277,27 +326,75 @@
                     throw new Error('餐單數據格式不正確');
                 }
 
+                // 解析成功後，更新當前菜單項目
+                currentMenuItems = menuData.menu || [];
+                
+                // 更新顯示模板
                 let menuHtml = `
                     <h3>${customerName ? customerName + ' 的' : ''}建議餐單 (${menuData.recommendedPeople} 人)</h3>
                     <div class="menu-section">
-                        <ul>
-                            ${(menuData.menu || []).map(item => `
-                                <li>
-                                    ${item.name} x ${item.quantity} (每份 $${item.price})
-                                    ${item.useExistingIngredients ? `
-                                        <br>
-                                        <small>使用現有食材: ${item.useExistingIngredients.join(', ')}</small>
-                                    ` : ''}
-                                </li>
-                            `).join('')}
-                        </ul>
+                        ${keepItems.length > 0 ? `
+                            <div class="kept-items-section">
+                                <h4>已選擇的菜品</h4>
+                                <div class="selected-items-text">
+                                    ${keepItems.map(item => item.name).join('、')}
+                                </div>
+                                <ul>
+                                    ${keepItems.map((item, index) => `
+                                        <li class="kept-item">
+                                            <div class="menu-item">
+                                                <label class="checkbox-label">
+                                                    <input type="checkbox" checked onchange="removeKeptItem(${index})">
+                                                    <span class="item-name">${item.name} x ${item.quantity} (每份 $${item.price})</span>
+                                                </label>
+                                            </div>
+                                            ${item.useExistingIngredients ? `
+                                                <small>使用現有食材: ${item.useExistingIngredients.join(', ')}</small>
+                                            ` : ''}
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="new-items-section">
+                            <h4>新建議菜品</h4>
+                            <div class="multi-select-controls">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" onchange="toggleAllItems(this.checked)">
+                                    <span>全選</span>
+                                </label>
+                                <button onclick="keepSelectedItems()" class="keep-selected-btn">保留已選菜品</button>
+                            </div>
+                            <ul>
+                                ${currentMenuItems.map((item, index) => `
+                                    <li class="new-item">
+                                        <div class="menu-item">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" class="menu-item-checkbox" data-index="${index}">
+                                                <span class="item-name">${item.name} x ${item.quantity} (每份 $${item.price})</span>
+                                            </label>
+                                        </div>
+                                        ${item.useExistingIngredients ? `
+                                            <small>使用現有食材: ${item.useExistingIngredients.join(', ')}</small>
+                                        ` : ''}
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
                     </div>
                     <div class="menu-footer">
-                        <p>總預算: $${menuData.totalPrice}</p>
+                        <p>總預算: $${calculateTotal()}</p>
                         ${menuData.additionalIngredients ? `
                             <p class="additional-ingredients">需要添購的食材: ${menuData.additionalIngredients.join(', ')}</p>
                         ` : ''}
                         ${menuData.notes ? `<p class="notes">${menuData.notes}</p>` : ''}
+                    </div>
+                    <div class="menu-actions">
+                        <button onclick="generateMenu()" class="regenerate-btn">重新生成其他菜品</button>
+                        ${keepItems.length > 0 ? `
+                            <button onclick="clearKeptItems()" class="clear-btn">清除所有已保留菜品</button>
+                        ` : ''}
                     </div>
                 `;
                 
@@ -305,6 +402,7 @@
                 result.classList.add('result-visible');
             } catch (error) {
                 console.error('錯誤:', error);
+                menuData = null;
                 result.innerHTML = `
                     <div class="error-message">
                         <h3>發生錯誤</h3>
@@ -318,7 +416,50 @@
             }
         }
 
-        // 點擊模態框外部時關閉
+        function calculateTotal() {
+            const keptTotal = keepItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const currentTotal = currentMenuItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            return keptTotal + currentTotal;
+        }
+
+        function keepItem(index) {
+            if (index >= 0 && index < currentMenuItems.length) {
+                const item = currentMenuItems[index];
+                keepItems.push(item);
+                generateMenu();
+            }
+        }
+
+        function removeKeptItem(index) {
+            if (index >= 0 && index < keepItems.length) {
+                keepItems.splice(index, 1);
+                generateMenu();
+            }
+        }
+
+        function clearKeptItems() {
+            if (confirm('確定要清除所有已保留的菜品嗎？')) {
+                keepItems = [];
+                generateMenu();
+            }
+        }
+
+        function toggleItem(index, checked) {
+            if (checked) {
+                keepItem(index);
+            } else {
+                const item = currentMenuItems[index];
+                const keepIndex = keepItems.findIndex(kept => 
+                    kept.name === item.name && 
+                    kept.price === item.price && 
+                    kept.quantity === item.quantity
+                );
+                if (keepIndex !== -1) {
+                    removeKeptItem(keepIndex);
+                }
+            }
+        }
+
         window.onclick = function(event) {
             const modal = document.getElementById('editModal');
             if (event.target == modal) {
@@ -326,11 +467,30 @@
             }
         }
 
-        // 頁面加載時初始化
         document.addEventListener('DOMContentLoaded', () => {
             loadCustomerSelect();
             loadCustomerData();
         });
+
+        function toggleAllItems(checked) {
+            const checkboxes = document.querySelectorAll('.menu-item-checkbox');
+            checkboxes.forEach(checkbox => checkbox.checked = checked);
+        }
+
+        function keepSelectedItems() {
+            const checkboxes = document.querySelectorAll('.menu-item-checkbox:checked');
+            const selectedIndexes = Array.from(checkboxes).map(checkbox => 
+                parseInt(checkbox.getAttribute('data-index'))
+            );
+            
+            selectedIndexes.forEach(index => {
+                if (index >= 0 && index < currentMenuItems.length) {
+                    keepItems.push(currentMenuItems[index]);
+                }
+            });
+            
+            generateMenu();
+        }
     </script>
 </body>
 </html> 

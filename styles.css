@@ -699,4 +699,158 @@ textarea {
 .input-hint {
     color: #666;
     font-size: 0.9em;
+}
+
+/* 基礎字體大小設置 */
+html {
+    font-size: 16px;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 1em;
+    line-height: 1.6;
+    background-color: #f5f5f5;
+}
+
+/* 響應式容器 */
+.container {
+    width: 95%;
+    max-width: 50em; /* 800px */
+    margin: 0 auto;
+    padding: 1.25em; /* 20px */
+}
+
+/* 標題大小 */
+h1 {
+    font-size: 1.75em; /* 28px */
+    margin-bottom: 1.5em;
+}
+
+h3 {
+    font-size: 1.25em; /* 20px */
+    margin-bottom: 0.75em;
+}
+
+/* 輸入區域響應式設計 */
+.input-card {
+    padding: 1.5em;
+    margin-bottom: 1.875em;
+}
+
+.input-section {
+    gap: 1.25em;
+}
+
+.input-row {
+    padding: 1em;
+}
+
+/* 表單元素 */
+input, textarea, select {
+    font-size: 1em;
+    padding: 0.625em;
+}
+
+.number-input input {
+    padding-right: 3.75em;
+}
+
+/* 按鈕樣式 */
+.generate-btn {
+    width: 12.5em;
+    height: 3.125em;
+    font-size: 1.125em;
+}
+
+.btn-icon {
+    font-size: 1.5em;
+}
+
+/* 響應式斷點 */
+@media screen and (max-width: 48em) { /* 768px */
+    html {
+        font-size: 14px;
+    }
+
+    .container {
+        width: 100%;
+        padding: 1em;
+    }
+
+    .input-card {
+        padding: 1em;
+    }
+
+    .toggle-switch {
+        width: 100%;
+    }
+
+    .toggle-switch label {
+        padding: 0.5em 1em;
+        font-size: 0.875em;
+    }
+
+    .number-controls button {
+        width: 1.5em;
+        height: 1.25em;
+    }
+
+    .generate-btn {
+        width: 100%;
+        max-width: 12.5em;
+    }
+
+    .checkbox-label {
+        padding: 0.75em;
+        font-size: 0.875em;
+    }
+}
+
+@media screen and (max-width: 30em) { /* 480px */
+    html {
+        font-size: 12px;
+    }
+
+    .section-header {
+        flex-direction: column;
+        gap: 0.5em;
+        align-items: flex-start;
+    }
+
+    .total-price {
+        width: 100%;
+    }
+
+    .input-hint {
+        font-size: 0.75em;
+    }
+}
+
+/* 更新其他尺寸為相對單位 */
+.loading-spinner {
+    width: 2.5em;
+    height: 2.5em;
+    border-width: 0.25em;
+}
+
+.kept-items, .menu-items {
+    margin: 1.25em 0;
+    padding: 1.25em;
+}
+
+.menu-notes {
+    margin-top: 1em;
+    padding: 1em;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 1.125em;
+    height: 1.125em;
+    margin-right: 0.625em;
+}
+
+.dish-note {
+    margin-top: 0.25em;
+    margin-left: 1.75em;
 } 

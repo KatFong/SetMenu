@@ -421,31 +421,82 @@
                 );
 
                 const data = await response.json();
-                const textContent = data.candidates[0].content.parts[0].text;
-                const jsonMatch = textContent.match(/\{[\s\S]*\}/);
-                const menuData = JSON.parse(jsonMatch[0]);
-                currentMenuItems = menuData.menu;
+                console.log('API 原始回應:', data);
 
-                menuResult.innerHTML = `
-                    <h3>建議餐單 (${menuData.recommendedPeople} 人)</h3>
-                    <div>
-                        ${menuData.menu.map((item, index) => `
-                            <label class="checkbox-label">
-                                <input type="checkbox" onchange="toggleItem(${index}, this.checked)">
-                                <span class="item-name">
-                                    ${item.name} x ${item.quantity} (每份 $${item.price})
-                                    ${item.notes ? `<small class="dish-note">${item.notes}</small>` : ''}
-                                </span>
-                            </label>
-                        `).join('')}
-                    </div>
-                    <p>本次建議總預算: $${menuData.totalPrice}</p>
-                    <p class="menu-notes">${menuData.notes}</p>
-                    <button onclick="generateMenu()" class="regenerate-btn">重新生成</button>
-                `;
+                if (!data || !data.candidates || !Array.isArray(data.candidates) || data.candidates.length === 0) {
+                    console.error('無效的 API 回應結構:', data);
+                    throw new Error('API 回應格式不正確');
+                }
 
+                const candidate = data.candidates[0];
+                if (!candidate || !candidate.content || !candidate.content.parts || !candidate.content.parts[0]) {
+                    console.error('無效的候選內容結構:', candidate);
+                    throw new Error('API 回應內容格式不正確');
+                }
+
+                const textContent = candidate.content.parts[0].text;
+                if (!textContent) {
+                    throw new Error('API 回應沒有文本內容');
+                }
+
+                console.log('提取的文本:', textContent);
+
+                // 嘗試清理和解析 JSON
+                let jsonStr = textContent;
+                try {
+                    // 找出 JSON 開始和結束的位置
+                    const startIdx = textContent.indexOf('{');
+                    const endIdx = textContent.lastIndexOf('}') + 1;
+                    if (startIdx === -1 || endIdx === 0) {
+                        throw new Error('無法在回應中找到有效的 JSON');
+                    }
+                    jsonStr = textContent.slice(startIdx, endIdx);
+                    
+                    // 清理可能的特殊字符
+                    jsonStr = jsonStr.replace(/[\n\r]/g, '')
+                                    .replace(/\s+/g, ' ')
+                                    .trim();
+                    
+                    console.log('準備解析的 JSON:', jsonStr);
+                    const menuData = JSON.parse(jsonStr);
+
+                    if (!menuData.menu || !Array.isArray(menuData.menu)) {
+                        throw new Error('菜單數據格式不正確');
+                    }
+
+                    currentMenuItems = menuData.menu;
+                    
+                    menuResult.innerHTML = `
+                        <h3>建議餐單 (${menuData.recommendedPeople} 人)</h3>
+                        <div>
+                            ${menuData.menu.map((item, index) => `
+                                <label class="checkbox-label">
+                                    <input type="checkbox" onchange="toggleItem(${index}, this.checked)">
+                                    <span class="item-name">
+                                        ${item.name} x ${item.quantity} (每份 $${item.price})
+                                        ${item.notes ? `<small class="dish-note">${item.notes}</small>` : ''}
+                                    </span>
+                                </label>
+                            `).join('')}
+                        </div>
+                        <p>本次建議總預算: $${menuData.totalPrice}</p>
+                        <p class="menu-notes">${menuData.notes}</p>
+                        <button onclick="generateMenu()" class="regenerate-btn">重新生成</button>
+                    `;
+
+                } catch (parseError) {
+                    console.error('JSON 解析錯誤:', parseError);
+                    console.error('嘗試解析的字符串:', jsonStr);
+                    throw new Error('無法解析餐單數據，請重試');
+                }
             } catch (error) {
-                menuResult.innerHTML = `<p style="color: red;">發生錯誤: ${error.message}</p>`;
+                console.error('完整錯誤:', error);
+                menuResult.innerHTML = `
+                    <div class="error-message">
+                        <p>發生錯誤: ${error.message}</p>
+                        <p>請稍後重試</p>
+                    </div>
+                `;
             }
         }
 

@@ -233,11 +233,6 @@ button:hover {
     font-size: 18px;
     background: linear-gradient(45deg, #4CAF50, #45a049);
     border-radius: 8px;
-    transition: transform 0.2s ease;
-}
-
-.generate-btn:hover {
-    transform: translateY(-2px);
 }
 
 .btn-icon {
@@ -624,11 +619,10 @@ select {
     font-size: 18px;
     background: linear-gradient(45deg, #4CAF50, #45a049);
     border-radius: 8px;
-    transition: transform 0.2s ease;
 }
 
 .generate-btn:hover {
-    transform: translateY(-2px);
+    transform: none;
 }
 
 .btn-icon {
@@ -677,7 +671,6 @@ select {
     background: white;
     padding: 12px;
     border-radius: 8px;
-    transition: all 0.2s ease;
 }
 
 .checkbox-label:hover {
@@ -1238,5 +1231,53 @@ input, textarea, select {
 
     .checkbox-label {
         font-size: 14px;
+    }
+}
+
+/* 统一移动端间距和布局 */
+@media screen and (max-width: 480px) {
+    /* 统一列表间距 */
+    .kept-items,
+    .menu-items {
+        margin: 10px 0;
+        padding: 12px;
+    }
+
+    /* 统一列表项间距 */
+    .checkbox-label {
+        padding: 8px;
+        margin-bottom: 6px;
+    }
+
+    /* 编辑按钮靠右 */
+    .section-header {
+        flex-direction: row;  /* 改回横向排列 */
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .header-actions {
+        flex-direction: row;  /* 确保按钮容器也是横向 */
+        width: auto;         /* 移除宽度限制 */
+    }
+
+    .menu-edit-btn {
+        width: auto;        /* 移除宽度限制 */
+        padding: 6px 12px;
+        font-size: 14px;
+    }
+
+    /* 统一标题大小和间距 */
+    .kept-items h3,
+    .menu-items h3 {
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+
+    /* 统一列表容器样式 */
+    .items-list,
+    .menu-items > div {
+        gap: 6px;
     }
 }

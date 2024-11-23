@@ -386,33 +386,30 @@
                         body: JSON.stringify({
                             contents: [{
                                 parts: [{
-                                    text: `Generate a catering menu with the following requirements:
-                                        Budget: ${totalBudget} HKD (${budgetType === 'perPerson' ? `${budgetInput} per person` : 'total'})
-                                        Number of people: ${people}
-                                        Special Requirements: ${notes || 'None'}
+                                    text: `你是一個餐飲專家，請根據以下要求生成到會餐單：
+                                        預算：${totalBudget} HKD ${budgetType === 'perPerson' ? `(每人 ${budgetInput})` : '(總預算)'}
+                                        人數：${people} 人
+                                        特別要求：${notes || '無'}
                                         
-                                        Requirements:
-                                        1. Suitable for catering events
-                                        2. Include price and quantity for each dish
-                                        3. Consider cost efficiency
-                                        4. Must consider the special requirements/notes
-                                        5. Ensure menu items are compatible with dietary restrictions
-                                        6. Keep the budget within ${budgetType === 'perPerson' ? `${budgetInput} HKD per person` : `${totalBudget} HKD total`}
+                                        要求：
+                                        1. 適合到會/宴會場合
+                                        2. 需包含每道菜的價格和建議份量
+                                        3. 考慮成本效益
+                                        4. 需考慮特別要求
+                                        5. 確保餐單在預算範圍內
                                         
-                                        Response in Chinese. Use this JSON format only:
+                                        請嚴格按照以下JSON格式回應，不要加入其他文字：
                                         {
                                             "menu": [
                                                 {
-                                                    "name": "中文菜名",
-                                                    "price": number,
-                                                    "quantity": number,
-                                                    "notes": "特別說明（如：不辣、素食等）"
+                                                    "name": "菜名",
+                                                    "price": 數字,
+                                                    "quantity": 數字
                                                 }
                                             ],
-                                            "totalPrice": number,
-                                            "pricePerPerson": number,
+                                            "totalPrice": 數字,
                                             "recommendedPeople": ${people},
-                                            "notes": "整體建議說明，包含對應特別要求的解釋"
+                                            "notes": "建議說明"
                                         }`
                                 }]
                             }]
@@ -421,47 +418,27 @@
                 );
 
                 const data = await response.json();
-                console.log('API 原始回應:', data);
+                console.log('API 回應:', data);
 
-                if (!data || !data.candidates || !Array.isArray(data.candidates) || data.candidates.length === 0) {
-                    console.error('無效的 API 回應結構:', data);
+                if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
                     throw new Error('API 回應格式不正確');
                 }
 
-                const candidate = data.candidates[0];
-                if (!candidate || !candidate.content || !candidate.content.parts || !candidate.content.parts[0]) {
-                    console.error('無效的候選內容結構:', candidate);
-                    throw new Error('API 回應內容格式不正確');
-                }
+                const textContent = data.candidates[0].content.parts[0].text;
+                console.log('回應文本:', textContent);
 
-                const textContent = candidate.content.parts[0].text;
-                if (!textContent) {
-                    throw new Error('API 回應沒有文本內容');
-                }
-
-                console.log('提取的文本:', textContent);
-
-                // 嘗試清理和解析 JSON
-                let jsonStr = textContent;
+                // 嘗試提取和解析 JSON
                 try {
-                    // 找出 JSON 開始和結束的位置
-                    const startIdx = textContent.indexOf('{');
-                    const endIdx = textContent.lastIndexOf('}') + 1;
-                    if (startIdx === -1 || endIdx === 0) {
-                        throw new Error('無法在回應中找到有效的 JSON');
+                    const jsonMatch = textContent.match(/\{[\s\S]*\}/);
+                    if (!jsonMatch) {
+                        throw new Error('無法找到 JSON 格式的回應');
                     }
-                    jsonStr = textContent.slice(startIdx, endIdx);
-                    
-                    // 清理可能的特殊字符
-                    jsonStr = jsonStr.replace(/[\n\r]/g, '')
-                                    .replace(/\s+/g, ' ')
-                                    .trim();
-                    
-                    console.log('準備解析的 JSON:', jsonStr);
-                    const menuData = JSON.parse(jsonStr);
+
+                    const menuData = JSON.parse(jsonMatch[0]);
+                    console.log('解析後的菜單數據:', menuData);
 
                     if (!menuData.menu || !Array.isArray(menuData.menu)) {
-                        throw new Error('菜單數據格式不正確');
+                        throw new Error('菜單格式不正確');
                     }
 
                     currentMenuItems = menuData.menu;
@@ -486,7 +463,7 @@
 
                 } catch (parseError) {
                     console.error('JSON 解析錯誤:', parseError);
-                    console.error('嘗試解析的字符串:', jsonStr);
+                    console.error('嘗試解析的字符串:', jsonMatch[0]);
                     throw new Error('無法解析餐單數據，請重試');
                 }
             } catch (error) {

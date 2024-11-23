@@ -447,3 +447,12 @@ document.getElementById('budgetType').addEventListener('change', saveInputValues
 document.getElementById('budget').addEventListener('input', saveInputValues);
 document.getElementById('people').addEventListener('input', saveInputValues);
 document.getElementById('notes').addEventListener('input', saveInputValues); 
+
+// 修改 VPN 提醒显示函数
+function showVPNReminder() {
+    const reminder = document.getElementById('vpnReminder');
+    reminder.style.display = 'block';
+    // 强制重排以触发动画
+    void reminder.offsetWidth;
+    reminder.classList.add('show');
+} 

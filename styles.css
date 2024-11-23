@@ -8,6 +8,12 @@
     --border-color: #ddd;
     --error-bg: #ffebee;
     --error-color: #d32f2f;
+    --gradient-start: #3498db;
+    --gradient-end: #2ecc71;
+    --card-bg: #ffffff;
+    --input-bg: #f8f9fa;
+    --text-primary: #2c3e50;
+    --text-secondary: #666;
 }
 
 * {
@@ -18,15 +24,20 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background-color: #f5f5f5;
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    min-height: 100vh;
+    padding: 20px;
     color: #333;
     line-height: 1.6;
 }
 
 .container {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     max-width: 800px;
     margin: 0 auto;
-    padding: 20px;
 }
 
 .header {
@@ -35,8 +46,11 @@ body {
 }
 
 .header h1 {
-    color: #2c3e50;
-    margin-bottom: 10px;
+    color: var(--text-primary);
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 30px;
+    text-align: center;
 }
 
 .card {
@@ -188,15 +202,22 @@ button:hover {
     height: 50px;
     margin: 20px auto 0;
     padding: 0;
-    background: linear-gradient(45deg, #4CAF50, #45a049);
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
     transition: transform 0.2s ease;
+    padding: 15px 30px;
+    color: white;
+    font-weight: 500;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .generate-btn:hover {
     transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
 }
 
 .btn-content,
@@ -488,11 +509,10 @@ select {
 }
 
 .input-card {
-    background: white;
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-    margin-bottom: 30px;
+    background: var(--input-bg);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 25px;
 }
 
 .budget-section {
@@ -853,4 +873,123 @@ input, textarea, select {
 .dish-note {
     margin-top: 0.25em;
     margin-left: 1.75em;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+}
+
+.copy-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.5em 1em;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875em;
+    transition: all 0.2s ease;
+    width: auto;
+}
+
+.copy-btn:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+}
+
+.copy-btn .btn-icon {
+    font-size: 1.2em;
+}
+
+@media screen and (max-width: 48em) {
+    .header-actions {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5em;
+    }
+
+    .copy-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+.budget-input-group {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+}
+
+.budget-input-group select {
+    width: auto;
+    min-width: 100px;
+    border-radius: 4px 0 0 4px;
+    border-right: none;
+    background-color: #f8f9fa;
+    padding: 0.625em;
+}
+
+.budget-input-group input {
+    border-radius: 0 4px 4px 0;
+    flex: 1;
+}
+
+/* 移動端適配 */
+@media screen and (max-width: 48em) {
+    .budget-input-group select {
+        min-width: 80px;
+        font-size: 0.9em;
+    }
+}
+
+/* 修改 VPN 提醒樣式 */
+.vpn-reminder {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #ff9800;
+    color: white;
+    padding: 0.5em;
+    text-align: center;
+    z-index: 1000;
+    font-size: 0.9em;
+}
+
+.reminder-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5em;
+}
+
+.warning-icon {
+    font-size: 1.2em;
+}
+
+/* 移除不需要的樣式 */
+.reminder-list,
+.retry-btn {
+    display: none;
+}
+
+@media screen and (max-width: 480px) {
+    .vpn-reminder {
+        font-size: 0.8em;
+        padding: 0.4em;
+    }
+}
+
+/* 改進輸入框樣式 */
+input, select {
+    transition: border-color 0.3s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--gradient-start);
 } 

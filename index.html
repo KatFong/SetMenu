@@ -236,6 +236,109 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .vpn-reminder {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #ff9800;
+            color: white;
+            padding: 1em;
+            text-align: center;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .reminder-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.8em;
+        }
+
+        .warning-icon {
+            font-size: 1.5em;
+        }
+
+        .reminder-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            font-size: 0.9em;
+        }
+
+        .reminder-list li {
+            margin: 0.3em 0;
+        }
+
+        .retry-btn {
+            background: white;
+            color: #ff9800;
+            padding: 0.5em 1em;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            width: auto;
+            transition: all 0.2s ease;
+        }
+
+        .retry-btn:hover {
+            background: #f5f5f5;
+        }
+
+        .retry-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        @media screen and (max-width: 480px) {
+            .input-section {
+                grid-template-columns: 1fr;
+            }
+
+            .toggle-switch {
+                flex-direction: row;
+                width: 100%;
+            }
+
+            .toggle-switch label {
+                flex: 1;
+                text-align: center;
+                padding: 0.8em 0.5em;
+                font-size: 0.9em;
+            }
+
+            .input-row {
+                padding: 1em 0.8em;
+            }
+
+            textarea {
+                height: 100px;
+            }
+
+            .checkbox-label {
+                padding: 0.8em;
+                font-size: 0.9em;
+            }
+
+            .menu-notes {
+                font-size: 0.9em;
+                padding: 0.8em;
+            }
+
+            .generate-btn {
+                width: 100%;
+                font-size: 1em;
+                padding: 0.8em;
+            }
+
+            .vpn-reminder {
+                padding: 0.8em;
+                font-size: 0.9em;
+            }
+        }
     </style>
 </head>
 <body>
@@ -246,43 +349,34 @@
             <div class="input-section">
                 <div class="input-row">
                     <div class="budget-group">
-                        <div class="toggle-switch">
-                            <input type="radio" id="totalBudget" name="budgetType" value="total" checked onchange="toggleBudgetInput()">
-                            <label for="totalBudget">總預算</label>
-                            <input type="radio" id="perPersonBudget" name="budgetType" value="perPerson" onchange="toggleBudgetInput()">
-                            <label for="perPersonBudget">每人預算</label>
-                        </div>
-                        <div class="number-input">
-                            <input type="number" 
-                                   id="budget" 
-                                   placeholder="例如：2000" 
-                                   min="0" 
-                                   step="100" 
-                                   required>
-                            <div class="number-controls">
-                                <button onclick="adjustBudget(100)" class="up">+</button>
-                                <button onclick="adjustBudget(-100)" class="down">-</button>
+                        <div class="input-group">
+                            <label for="budget">預算</label>
+                            <div class="budget-input-group">
+                                <select id="budgetType" onchange="toggleBudgetInput()">
+                                    <option value="total">總預算</option>
+                                    <option value="perPerson">每人</option>
+                                </select>
+                                <input type="number" 
+                                       id="budget" 
+                                       placeholder="例如：2000" 
+                                       min="0" 
+                                       step="100" 
+                                       required>
                             </div>
+                            <small id="budgetHint" class="input-hint">輸入預算金額</small>
                         </div>
-                        <small id="budgetHint" class="input-hint">輸入總預算金額</small>
                     </div>
                 </div>
 
                 <div class="input-row">
                     <div class="input-group">
                         <label for="people">預計人數</label>
-                        <div class="number-input">
-                            <input type="number" 
-                                   id="people" 
-                                   placeholder="例如：10" 
-                                   min="1" 
-                                   required 
-                                   onchange="updateBudgetHint()">
-                            <div class="number-controls">
-                                <button onclick="adjustPeople(1)" class="up">+</button>
-                                <button onclick="adjustPeople(-1)" class="down">-</button>
-                            </div>
-                        </div>
+                        <input type="number" 
+                               id="people" 
+                               placeholder="例如：10" 
+                               min="1" 
+                               required 
+                               onchange="updateBudgetHint()">
                     </div>
                 </div>
 
@@ -308,7 +402,6 @@
                             <div class="steam"></div>
                         </div>
                     </div>
-                    <span>準備中...</span>
                 </div>
             </button>
         </div>
@@ -317,7 +410,13 @@
         <div id="keptItems" class="kept-items" style="display: none;">
             <div class="section-header">
                 <h3>已選擇的菜品</h3>
-                <div class="total-price">總價: $<span id="keptTotal">0</span></div>
+                <div class="header-actions">
+                    <div class="total-price">總價: $<span id="keptTotal">0</span></div>
+                    <button onclick="copyMenu()" class="copy-btn">
+                        <span class="btn-icon">📋</span>
+                        複製菜單
+                    </button>
+                </div>
             </div>
             <div id="keptItemsList" class="items-list"></div>
         </div>
@@ -330,6 +429,14 @@
 
         <!-- 新菜品區域 -->
         <div id="menuResult" class="menu-items"></div>
+
+        <!-- 修改 VPN 提醒部分 -->
+        <div id="vpnReminder" class="vpn-reminder" style="display: none;">
+            <div class="reminder-content">
+                <span class="warning-icon">⚠️</span>
+                <span>請開啟 VPN 後重新整理頁面</span>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -346,7 +453,7 @@
                 keptItemsList.innerHTML = keepItems.map((item, index) => `
                     <label class="checkbox-label">
                         <input type="checkbox" checked onchange="removeItem(${index})">
-                        ${item.name} x ${item.quantity} (每份 $${item.price})
+                        ${item.name} x ${item.quantity}
                     </label>
                 `).join('');
                 
@@ -393,21 +500,17 @@
                                         
                                         要求：
                                         1. 適合到會/宴會場合
-                                        2. 需包含每道菜的價格和建議份量
-                                        3. 考慮成本效益
-                                        4. 需考慮特別要求
-                                        5. 確保餐單在預算範圍內
+                                        2. 考慮成本效益
+                                        3. 需考慮特別要求
+                                        4. 確保餐單在預算範圍內
                                         
                                         請嚴格按照以下JSON格式回應，不要加入其他文字：
                                         {
                                             "menu": [
                                                 {
-                                                    "name": "菜名",
-                                                    "price": 數字,
-                                                    "quantity": 數字
+                                                    "name": "菜名"
                                                 }
                                             ],
-                                            "totalPrice": 數字,
                                             "recommendedPeople": ${people},
                                             "notes": "建議說明"
                                         }`
@@ -421,7 +524,7 @@
                 console.log('API 回應:', data);
 
                 if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
-                    throw new Error('API 回應格式不正確');
+                    throw new Error('API 回應��式不正確');
                 }
 
                 const textContent = data.candidates[0].content.parts[0].text;
@@ -450,15 +553,12 @@
                                 <label class="checkbox-label">
                                     <input type="checkbox" onchange="toggleItem(${index}, this.checked)">
                                     <span class="item-name">
-                                        ${item.name} x ${item.quantity} (每份 $${item.price})
-                                        ${item.notes ? `<small class="dish-note">${item.notes}</small>` : ''}
+                                        ${item.name}
                                     </span>
                                 </label>
                             `).join('')}
                         </div>
-                        <p>本次建議總預算: $${menuData.totalPrice}</p>
                         <p class="menu-notes">${menuData.notes}</p>
-                        <button onclick="generateMenu()" class="regenerate-btn">重新生成</button>
                     `;
 
                 } catch (parseError) {
@@ -529,6 +629,15 @@
         }
 
         async function handleGenerateClick() {
+            try {
+                const testResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=AIzaSyCl78ysJGjkonNy8Ly-rpZJuB5bA2DYeJs', {
+                    method: 'HEAD'
+                });
+            } catch (error) {
+                showVPNReminder();
+                return;
+            }
+
             const btn = document.querySelector('.generate-btn');
             btn.classList.add('loading');
             
@@ -537,6 +646,74 @@
             } finally {
                 btn.classList.remove('loading');
             }
+        }
+
+        // 修改 checkConnection 函數
+        async function checkConnection() {
+            try {
+                const testResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=AIzaSyCl78ysJGjkonNy8Ly-rpZJuB5bA2DYeJs', {
+                    method: 'HEAD'
+                });
+                document.getElementById('vpnReminder').style.display = 'none';
+            } catch (error) {
+                showVPNReminder();
+            }
+        }
+
+        // 添加 VPN 提醒函數
+        function showVPNReminder() {
+            const vpnReminder = document.getElementById('vpnReminder');
+            vpnReminder.style.display = 'block';
+            vpnReminder.innerHTML = `
+                <div class="reminder-content">
+                    <span class="warning-icon">⚠️</span>
+                    <span>請開啟 VPN 後重新整理頁面</span>
+                </div>
+            `;
+        }
+
+        // 添加重試連接函數
+        async function retryConnection() {
+            const retryBtn = document.querySelector('.retry-btn');
+            retryBtn.disabled = true;
+            retryBtn.textContent = '正在檢查連接...';
+            
+            try {
+                await checkConnection();
+            } finally {
+                retryBtn.disabled = false;
+                retryBtn.textContent = '重試連接';
+            }
+        }
+
+        // 頁面加載時檢查連接
+        document.addEventListener('DOMContentLoaded', checkConnection);
+
+        // 修改複製功能
+        function copyMenu() {
+            if (keepItems.length === 0) {
+                alert('還未選擇任何菜品');
+                return;
+            }
+            
+            const menuText = `已選擇的菜單：\n\n${keepItems.map(item => 
+                `${item.name}`
+            ).join('\n')}`;
+
+            navigator.clipboard.writeText(menuText)
+                .then(() => {
+                    const copyBtn = document.querySelector('.copy-btn');
+                    const originalText = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<span class="btn-icon">✅</span> 已複製';
+                    
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalText;
+                    }, 3000);
+                })
+                .catch(err => {
+                    console.error('複製失敗:', err);
+                    alert('複製失敗，請手動複製');
+                });
         }
     </script>
 </body>

@@ -60,10 +60,10 @@ body {
 }
 
 .header h1 {
-    font-size: 1.75em;
+    font-size: 2em;
     text-align: center;
     color: var(--text-primary);
-    margin: 0 auto 1.5em;
+    margin: 0.5em auto 1.5em;
     padding: 0.5em 0;
     position: relative;
     width: 100%;
@@ -1081,8 +1081,8 @@ input, textarea, select {
     }
     
     .loading-content lottie-player {
-        width: 80px !important;
-        height: 80px !important;
+        width: 50px !important;
+        height: 50px !important;
     }
     
     .loading-content p {
@@ -1131,6 +1131,112 @@ input, textarea, select {
 @media screen and (max-width: 480px) {
     .modal-buttons button {
         padding: 10px 16px;
+        font-size: 14px;
+    }
+}
+
+/* 移动端适配样式调整 */
+@media screen and (max-width: 480px) {
+    /* 调整容器内边距 */
+    .container {
+        padding: 15px;
+    }
+
+    /* 调整输入区域 */
+    .input-row {
+        padding: 12px;
+    }
+
+    /* 调整输入框字体大小 */
+    input, 
+    select, 
+    textarea {
+        font-size: 16px;  /* 保持较大字体以便于输入 */
+        padding: 8px;
+    }
+
+    /* 调整预算输入组 */
+    .budget-input-group select {
+        min-width: 70px;
+        font-size: 16px;
+    }
+
+    /* 调整按钮大小 */
+    .generate-btn {
+        width: 180px;  /* 减小按钮宽度 */
+        padding: 10px 20px;
+        font-size: 16px;
+    }
+
+    .menu-edit-btn {
+        padding: 6px 12px;
+        font-size: 14px;
+    }
+
+    /* 调整复选框标签 */
+    .checkbox-label {
+        padding: 10px;
+        font-size: 16px;
+    }
+
+    /* 调整模态框内容 */
+    .modal-content {
+        width: 90%;
+        padding: 15px;
+        margin: 10% auto;
+    }
+
+    .modal-buttons button {
+        padding: 8px 15px;
+        font-size: 14px;
+    }
+
+    /* 调整文本区域 */
+    #menuEditArea {
+        font-size: 16px;
+        padding: 8px;
+    }
+
+    /* 调整标题大小 */
+    h1 {
+        font-size: 1.5em;
+        margin-bottom: 1em;
+    }
+
+    h3 {
+        font-size: 1.1em;
+    }
+
+    /* 调整提示文本 */
+    .input-hint {
+        font-size: 14px;
+    }
+
+    /* 调整菜单注释 */
+    .menu-notes {
+        font-size: 14px;
+        padding: 10px;
+    }
+}
+
+/* 针对更小屏幕的优化 */
+@media screen and (max-width: 360px) {
+    .container {
+        padding: 10px;
+    }
+
+    input, 
+    select, 
+    textarea {
+        font-size: 14px;
+    }
+
+    .generate-btn {
+        width: 160px;
+        font-size: 14px;
+    }
+
+    .checkbox-label {
         font-size: 14px;
     }
 }

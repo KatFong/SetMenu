@@ -434,7 +434,33 @@ async function generateMenu() {
     }
 }
 
-// 修改页面加载时的初始化
+// 添加 VPN 连接检查函数
+async function checkConnection() {
+    try {
+        const testResponse = await fetch(
+            'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=AIzaSyCl78ysJGjkonNy8Ly-rpZJuB5bA2DYeJs',
+            {
+                method: 'HEAD'
+            }
+        );
+        const reminder = document.getElementById('vpnReminder');
+        reminder.style.display = 'none';
+        reminder.classList.remove('show');
+    } catch (error) {
+        showVPNReminder();
+    }
+}
+
+// 修改 VPN 提醒显示函数
+function showVPNReminder() {
+    const reminder = document.getElementById('vpnReminder');
+    reminder.style.display = 'block';
+    // 强制重排以触发动画
+    void reminder.offsetWidth;
+    reminder.classList.add('show');
+}
+
+// 页面加载时的初始化
 document.addEventListener('DOMContentLoaded', () => {
     // 检查 VPN 连接
     checkConnection();
@@ -447,12 +473,3 @@ document.getElementById('budgetType').addEventListener('change', saveInputValues
 document.getElementById('budget').addEventListener('input', saveInputValues);
 document.getElementById('people').addEventListener('input', saveInputValues);
 document.getElementById('notes').addEventListener('input', saveInputValues); 
-
-// 修改 VPN 提醒显示函数
-function showVPNReminder() {
-    const reminder = document.getElementById('vpnReminder');
-    reminder.style.display = 'block';
-    // 强制重排以触发动画
-    void reminder.offsetWidth;
-    reminder.classList.add('show');
-} 
